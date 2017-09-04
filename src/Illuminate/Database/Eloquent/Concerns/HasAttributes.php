@@ -532,9 +532,7 @@ trait HasAttributes
             $value = $this->fromDateTime($value);
         }
 
-        // If the "attribute" exists as a method on the model, we'll assume a 
-        // relationship if the value is also a model. We'll transform both
-        // the "attribute" and the given model to set the relationship.
+        // If the "attribute" is named after a relation, we'll associate it.
         elseif (method_exists($this, $key) && method_exists($relation = $this->$key(), 'associate')) {
             return $relation->associate($value);
         }
