@@ -7,11 +7,9 @@ use DateTimeInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection as BaseCollection;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\JsonEncodingException;
 
 trait HasAttributes
@@ -527,6 +525,7 @@ trait HasAttributes
             return $this->{$method}($value);
         }
 
+
         // If an attribute is listed as a "date", we'll convert it from a DateTime
         // instance into a form proper for storage on the database tables using
         // the connection grammar's date format. We will auto set the values.
@@ -537,16 +536,8 @@ trait HasAttributes
         // If the "attribute" exists as a method on the model, we'll assume a 
         // relationship if the value is also a model. We'll transform both
         // the "attribute" and the given model to set the relationship.
-        elseif (method_exists($this, $key) && $value instanceof Model) {
-
-            $relation = $this->$key();
-
-            if ($relation instanceof BelongsTo) {
-                $this->setRelation($key, $value);
-
-                $key = $relation->getForeignKey();
-                $value = $value->getAttributeFromArray($relation->getOwnerKey());
-            }
+        elseif (method_exists($this, $key) && method_exists($relation = $this->$key(), 'associate')) {
+            return $relation->associate($value);
         }
 
         if ($this->isJsonCastable($key) && ! is_null($value)) {
